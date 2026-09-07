@@ -1,0 +1,39 @@
+{
+  "name": "ecomap",
+  "version": "1.0.0",
+  "description": "Sistema web colaborativo para localização e gerenciamento de pontos de reciclagem.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "cross-env NODE_ENV=development jest --runInBand",
+    "lint": "eslint .",
+    "db:seed": "node src/database/seeds/seed.js"
+  },
+  "keywords": [
+    "sustainability",
+    "recycling",
+    "open-source",
+    "nodejs",
+    "express",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "eslint": "^9.35.0",
+    "jest": "^30.5.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.2.2"
+  }
+}
