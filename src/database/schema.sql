@@ -38,3 +38,6 @@ CREATE TABLE IF NOT EXISTS ponto_materiais (
         REFERENCES materiais(id)
         ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_ponto_materiais_material_id
+    ON ponto_materiais(material_id);
