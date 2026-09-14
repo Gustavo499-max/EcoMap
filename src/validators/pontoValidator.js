@@ -11,6 +11,14 @@ const criarPontoValidation = [
     .notEmpty()
     .withMessage("O endereço é obrigatório."),
 
+  body("numero")
+    .optional({ values: "falsy" })
+    .trim(),
+
+  body("bairro")
+    .optional({ values: "falsy" })
+    .trim(),
+
   body("cidade")
     .trim()
     .notEmpty()
@@ -27,6 +35,14 @@ const criarPontoValidation = [
     .matches(/^\d{5}-?\d{3}$/)
     .withMessage("O CEP deve possuir um formato válido."),
 
+  body("telefone")
+    .optional({ values: "falsy" })
+    .trim(),
+
+  body("horario_funcionamento")
+    .optional({ values: "falsy" })
+    .trim(),
+
   body("latitude")
     .optional({ values: "falsy" })
     .isFloat({ min: -90, max: 90 })
@@ -36,6 +52,10 @@ const criarPontoValidation = [
     .optional({ values: "falsy" })
     .isFloat({ min: -180, max: 180 })
     .withMessage("A longitude deve estar entre -180 e 180."),
+
+  body("descricao")
+    .optional({ values: "falsy" })
+    .trim(),
 
   body("materiais")
     .optional()

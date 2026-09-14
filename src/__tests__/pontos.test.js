@@ -76,4 +76,71 @@ it('deve criar um novo ponto com sucesso (POST /api/pontos)', async () => {
 
     expect(response.status).toBe(404);
   });
+
+  it('deve atualizar um ponto com sucesso (PUT /api/pontos/:id)', async () => {
+    if (!createdPontoId) return;
+
+    const dadosAtualizados = {
+      nome: 'Ponto de Coleta Atualizado',
+      endereco: 'Rua Atualizada',
+      numero: '456',
+      bairro: 'Centro',
+      cidade: 'Taboão da Serra',
+      estado: 'SP',
+      cep: '06700-000',
+      telefone: '(11) 98888-8888',
+      horario_funcionamento: 'Segunda a Sexta, das 08h às 18h',
+      latitude: -23.6221,
+      longitude: -46.7997,
+      descricao: 'Ponto atualizado para teste'
+    };
+
+    const response = await request(app)
+      .put(`/api/pontos/${createdPontoId}`)
+      .send(dadosAtualizados);
+
+    expect(response.status).toBe(200);
+
+    const pontoAtualizado = response.body.data || response.body;
+    expect(pontoAtualizado.nome).toBe(dadosAtualizados.nome);
+  });
+
+  it('deve retornar 404 ao tentar atualizar um ponto inexistente (PUT /api/pontos/:id)', async () => {
+    const dadosAtualizados = {
+      nome: 'Ponto Inexistente',
+      endereco: 'Rua Teste',
+      numero: '123',
+      bairro: 'Centro',
+      cidade: 'Taboão da Serra',
+      estado: 'SP',
+      cep: '06700-000',
+      telefone: '(11) 99999-9999',
+      horario_funcionamento: 'Segunda a Sexta',
+      latitude: -23.6221,
+      longitude: -46.7997,
+      descricao: 'Teste'
+    };
+
+    const response = await request(app)
+      .put('/api/pontos/999999')
+      .send(dadosAtualizados);
+
+    expect(response.status).toBe(404);
+  });
+
+  it('deve excluir um ponto com sucesso (DELETE /api/pontos/:id)', async () => {
+    if (!createdPontoId) return;
+
+    const response = await request(app)
+      .delete(`/api/pontos/${createdPontoId}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  it('deve retornar 404 ao tentar excluir um ponto inexistente (DELETE /api/pontos/:id)', async () => {
+    const response = await request(app)
+      .delete('/api/pontos/999999');
+
+    expect(response.status).toBe(404);
+  });
 });
