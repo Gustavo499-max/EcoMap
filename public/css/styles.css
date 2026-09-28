@@ -74,7 +74,8 @@ main {
     font-weight: 600;
 }
 
-.campo select {
+.campo select,
+.campo input {
     width: 100%;
     min-height: 44px;
     padding: 8px 12px;
@@ -120,7 +121,25 @@ main {
     background: var(--verde-claro);
 }
 
+.campo-busca {
+    grid-column: 1 / -1;
+}
+
+.localizacao {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.localizacao-status {
+    margin: 0;
+    color: var(--texto-suave);
+}
+
 select:focus-visible,
+input:focus-visible,
 .botao:focus-visible {
     outline: 3px solid var(--verde-escuro);
     outline-offset: 2px;
@@ -169,6 +188,11 @@ select:focus-visible,
 
 .ponto p {
     margin: 0 0 8px;
+}
+
+.ponto .distancia {
+    font-weight: 600;
+    color: var(--verde-texto);
 }
 
 .ponto .endereco,

@@ -35,6 +35,9 @@
 - Endpoint de verificação de saúde da aplicação.
 - Listagem de pontos de reciclagem na página inicial (nome, endereço, materiais aceitos e horário de funcionamento).
 - Filtros por cidade e por material, com indicação de carregamento, lista vazia e erro na consulta.
+- Busca por nome do ponto ou por material aceito, sem diferenciar maiúsculas de minúsculas nem acentos.
+- Localização do usuário (opcional): mostra a distância até cada ponto e ordena do mais próximo ao mais distante.
+- Filtro de material informa em quantos pontos cada material é aceito.
 
  ### 🚧 Em desenvolvimento
 
@@ -184,10 +187,19 @@ O filtro usa o **slug** do material (ex.: `plastico`, `oleo-de-cozinha`). Os slu
 GET /api/pontos?material=plastico
 ```
 
+ ### Buscar por nome ou material
+
+ Procura o texto no nome do ponto ou no nome de um material aceito, ignorando maiúsculas e acentos (`sao joao` encontra `São João`).
+
+```
+GET /api/pontos?busca=vidro
+```
+
  ### Combinar filtros
 
 ```
 GET /api/pontos?cidade=Campinas&material=vidro
+GET /api/pontos?busca=recicla&cidade=Campinas
 ```
 
  ### Listar materiais
@@ -195,6 +207,8 @@ GET /api/pontos?cidade=Campinas&material=vidro
 ```
 GET /api/materiais
 ```
+
+ Cada material retorna `id`, `nome`, `slug` e `total_pontos` (quantidade de pontos que o aceitam).
 
  ### Buscar ponto por ID
 
@@ -219,6 +233,14 @@ PUT /api/pontos/:id
 ```
 DELETE /api/pontos/:id
 ```
+
+ ## 📍 Localização do usuário
+
+ O botão **Usar minha localização** usa a API de geolocalização do navegador para calcular a distância em linha reta até os pontos que possuem latitude e longitude.
+
+- A posição é usada apenas no navegador e **nunca é enviada ao servidor**.
+- O navegador só permite geolocalização em `localhost` ou em páginas HTTPS.
+- Pontos sem coordenadas continuam na lista, mas ficam no final e sem distância.
 
  ## 🗄️ Banco de dados
 
