@@ -9,6 +9,7 @@
 
   const el = {
     formulario: document.getElementById("form-filtros"),
+    busca: document.getElementById("busca"),
     cidade: document.getElementById("filtro-cidade"),
     material: document.getElementById("filtro-material"),
     limpar: document.getElementById("limpar-filtros"),
@@ -20,6 +21,9 @@
     erro: document.getElementById("erro"),
     tentarNovamente: document.getElementById("tentar-novamente"),
     lista: document.getElementById("lista-pontos"),
+    blocoLocalizacao: document.getElementById("bloco-localizacao"),
+    localizacao: document.getElementById("usar-localizacao"),
+    localizacaoStatus: document.getElementById("localizacao-status"),
   };
 
   // Requisição em andamento. Cancelada quando o usuário filtra de novo,
@@ -28,6 +32,12 @@
 
   // As opções dos selects vêm da API; só ficam prontas após a 1ª carga.
   let opcoesCarregadas = false;
+
+  // Localização do usuário (só existe no navegador; nunca é enviada ao servidor)
+  // e a última lista exibida, para reordenar sem nova consulta.
+  let posicao = null;
+  let obtendoLocalizacao = false;
+  let ultimosPontos = [];
 
   const comparar = (a, b) => a.localeCompare(b, "pt-BR");
 
@@ -79,6 +89,7 @@
 
   function filtrosSelecionados() {
     return {
+      busca: el.busca.value.trim(),
       cidade: el.cidade.value,
       material: el.material.value,
     };
@@ -126,13 +137,23 @@
 
   // Os dados da API são inseridos sempre via textContent (nunca innerHTML),
   // para que nomes ou endereços com HTML não sejam interpretados pelo navegador.
-  function criarCartao(ponto) {
+  function criarCartao(ponto, distanciaKm) {
     const cartao = criarElemento("li", "ponto");
 
     cartao.append(
       criarElemento("h3", "", ponto.nome),
       criarElemento("p", "endereco", formatarEndereco(ponto))
     );
+
+    if (distanciaKm !== null) {
+      cartao.append(
+        criarElemento(
+          "p",
+          "distancia",
+          `A ${EcoGeo.formatarDistancia(distanciaKm)} de você (em linha reta)`
+        )
+      );
+    }
 
     if (ponto.horario_funcionamento) {
       cartao.append(
@@ -158,25 +179,50 @@
     return cartao;
   }
 
-  function renderizar(pontos) {
-    const { cidade, material } = filtrosSelecionados();
-    const temFiltro = Boolean(cidade || material);
+  // Com localização ativa, ordena do mais perto ao mais longe. Pontos sem
+  // coordenadas vão para o fim, mantendo a ordem original da API.
+  function calcularDistancias(pontos) {
+    const itens = pontos.map((ponto) => ({
+      ponto,
+      distancia:
+        posicao && EcoGeo.temCoordenadas(ponto) ? EcoGeo.distanciaKm(posicao, ponto) : null,
+    }));
 
+    if (posicao) {
+      itens.sort((a, b) => {
+        if (a.distancia === b.distancia) return 0;
+        if (a.distancia === null) return 1;
+        if (b.distancia === null) return -1;
+        return a.distancia - b.distancia;
+      });
+    }
+
+    return itens;
+  }
+
+  function renderizar(pontos) {
+    const { busca, cidade, material } = filtrosSelecionados();
+    const temFiltro = Boolean(busca || cidade || material);
+
+    ultimosPontos = pontos;
     el.lista.replaceChildren();
 
     if (pontos.length === 0) {
       el.vazioTexto.textContent = temFiltro
-        ? "Nenhum ponto de reciclagem encontrado para os filtros selecionados. Tente outra cidade ou outro material, ou limpe os filtros."
+        ? "Nenhum ponto de reciclagem encontrado para a busca ou os filtros selecionados. Tente outros termos ou limpe os filtros."
         : "Ainda não há pontos de reciclagem cadastrados.";
 
       mostrar("vazio");
       return;
     }
 
-    el.lista.append(...pontos.map(criarCartao));
+    el.lista.append(
+      ...calcularDistancias(pontos).map(({ ponto, distancia }) => criarCartao(ponto, distancia))
+    );
 
     el.resumo.textContent =
-      pontos.length === 1 ? "1 ponto encontrado" : `${pontos.length} pontos encontrados`;
+      (pontos.length === 1 ? "1 ponto encontrado" : `${pontos.length} pontos encontrados`) +
+      (posicao ? ", do mais próximo ao mais distante" : "");
 
     mostrar("lista");
   }
@@ -241,7 +287,10 @@
 
       preencherOpcoes(
         el.material,
-        materiais.map((m) => ({ valor: m.slug, rotulo: m.nome }))
+        materiais.map((m) => ({
+          valor: m.slug,
+          rotulo: Number.isInteger(m.total_pontos) ? `${m.nome} (${m.total_pontos})` : m.nome,
+        }))
       );
 
       opcoesCarregadas = true;
@@ -265,6 +314,60 @@
     }
   }
 
+  // ---------- Localização do usuário ----------
+
+  function atualizarLocalizacao(texto) {
+    el.localizacao.textContent = posicao
+      ? "Parar de usar minha localização"
+      : "Usar minha localização";
+    el.localizacaoStatus.textContent = texto;
+
+    // Só reordena se há lista na tela; nos demais estados a próxima
+    // renderização já considera a posição.
+    if (!el.lista.hidden) {
+      renderizar(ultimosPontos);
+    }
+  }
+
+  function mensagemErroLocalizacao(erro) {
+    if (erro && erro.code === 1) {
+      return "Permissão negada. Libere o acesso à localização nas configurações do navegador e tente novamente.";
+    }
+
+    return "Não foi possível obter sua localização. Tente novamente.";
+  }
+
+  function alternarLocalizacao() {
+    if (posicao) {
+      posicao = null;
+      atualizarLocalizacao("Localização desativada.");
+      return;
+    }
+
+    if (obtendoLocalizacao) {
+      return;
+    }
+
+    obtendoLocalizacao = true;
+    el.localizacaoStatus.textContent = "Obtendo sua localização…";
+
+    navigator.geolocation.getCurrentPosition(
+      (resultado) => {
+        obtendoLocalizacao = false;
+        posicao = {
+          latitude: resultado.coords.latitude,
+          longitude: resultado.coords.longitude,
+        };
+        atualizarLocalizacao("Localização obtida. Os pontos com coordenadas mostram a distância até você.");
+      },
+      (erro) => {
+        obtendoLocalizacao = false;
+        el.localizacaoStatus.textContent = mensagemErroLocalizacao(erro);
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
   // ---------- Eventos ----------
 
   // Se a 1ª carga falhou, refaz tudo; senão, apenas reaplica os filtros.
@@ -282,12 +385,19 @@
   });
 
   el.limpar.addEventListener("click", () => {
+    el.busca.value = "";
     el.cidade.value = "";
     el.material.value = "";
     atualizar();
   });
 
   el.tentarNovamente.addEventListener("click", atualizar);
+
+  if ("geolocation" in navigator) {
+    el.localizacao.addEventListener("click", alternarLocalizacao);
+  } else {
+    el.blocoLocalizacao.hidden = true;
+  }
 
   iniciar();
 })();

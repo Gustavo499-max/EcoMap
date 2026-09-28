@@ -88,6 +88,15 @@ describe('GET /api/materiais', () => {
       ])
     );
   });
+
+  it('deve informar em quantos pontos cada material é aceito', async () => {
+    const response = await request(app).get('/api/materiais');
+    const material = (slug) => response.body.data.find((m) => m.slug === slug);
+
+    // A: pontos 1 e 2 | B: pontos 2 e 3
+    expect(material(MATERIAL_A.slug).total_pontos).toBe(2);
+    expect(material(MATERIAL_B.slug).total_pontos).toBe(2);
+  });
 });
 
 describe('Filtros de GET /api/pontos', () => {
@@ -164,6 +173,7 @@ describe('Página inicial', () => {
     expect(response.headers['content-type']).toMatch(/html/);
     expect(response.text).toContain('id="filtro-cidade"');
     expect(response.text).toContain('id="filtro-material"');
+    expect(response.text).toContain('id="busca"');
     expect(response.text).toContain('src="/js/app.js"');
   });
 
@@ -178,8 +188,10 @@ describe('Página inicial', () => {
 
   it('deve servir o JavaScript e o CSS da interface', async () => {
     const js = await request(app).get('/js/app.js');
+    const geo = await request(app).get('/js/geo.js');
     const css = await request(app).get('/css/styles.css');
 
+    expect(geo.status).toBe(200);
     expect(js.status).toBe(200);
     expect(js.headers['content-type']).toMatch(/javascript/);
     expect(css.status).toBe(200);

@@ -1,10 +1,17 @@
 const pontosService = require("../services/pontosService");
 
+// Parâmetros repetidos (?cidade=a&cidade=b) chegam como array e
+// quebrariam a consulta. Só texto é aceito; o resto é ignorado.
+function textoOuUndefined(valor) {
+  return typeof valor === "string" ? valor : undefined;
+}
+
 function listar(req, res, next) {
   try {
     const filtros = {
-      cidade: req.query.cidade,
-      material: req.query.material,
+      cidade: textoOuUndefined(req.query.cidade),
+      material: textoOuUndefined(req.query.material),
+      busca: textoOuUndefined(req.query.busca),
     };
 
     const pontos = pontosService.listarPontos(filtros);

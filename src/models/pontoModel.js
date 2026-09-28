@@ -1,4 +1,5 @@
 const db = require("../database/connection");
+const { normalizarTexto, escaparLike } = require("../utils/texto");
 
 // Campos que o validador aceita omitir. O better-sqlite3 exige todas as
 // chaves dos parâmetros nomeados, então os ausentes viram NULL.
@@ -45,6 +46,28 @@ function listarTodos(filtros = {}) {
     params.cidade = filtros.cidade;
   }
 
+  // Busca livre: nome do ponto ou nome de um material aceito,
+  // sem diferenciar maiúsculas de minúsculas nem acentos.
+  const busca = normalizarTexto(filtros.busca);
+
+  if (busca) {
+    conditions.push(`
+      (
+        normalizar(p.nome) LIKE @busca ESCAPE '\\'
+        OR EXISTS (
+          SELECT 1
+          FROM ponto_materiais pm3
+          INNER JOIN materiais m3
+            ON m3.id = pm3.material_id
+          WHERE pm3.ponto_id = p.id
+          AND normalizar(m3.nome) LIKE @busca ESCAPE '\\'
+        )
+      )
+    `);
+
+    params.busca = `%${escaparLike(busca)}%`;
+  }
+
   if (filtros.material) {
     conditions.push(`
       EXISTS (
@@ -78,10 +101,14 @@ function listarMateriais() {
   const materiais = db
     .prepare(`
       SELECT
-        id,
-        nome,
-        slug
-      FROM materiais
+        m.id,
+        m.nome,
+        m.slug,
+        COUNT(pm.ponto_id) AS total_pontos
+      FROM materiais m
+      LEFT JOIN ponto_materiais pm
+        ON pm.material_id = m.id
+      GROUP BY m.id
     `)
     .all();
 
