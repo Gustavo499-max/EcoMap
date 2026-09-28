@@ -4,77 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>EcoMap</title>
+    <title>EcoMap - Pontos de reciclagem</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f8f4;
-            color: #1f2937;
-        }
-
-        header {
-            background: #198754;
-            color: white;
-            padding: 24px;
-            text-align: center;
-        }
-
-        main {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 10px;
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .status {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 18px;
-            border-radius: 20px;
-            background: #d1fae5;
-            color: #065f46;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 
 <body>
 
-<header>
-    <h1>♻️ EcoMap</h1>
-    <p>Encontre pontos de reciclagem</p>
+<header class="topo">
+    <div class="container">
+        <h1>♻️ EcoMap</h1>
+        <p>Encontre pontos de reciclagem por cidade e tipo de material.</p>
+    </div>
 </header>
 
-<main>
-    <div class="card">
-        <h2>Bem-vindo ao EcoMap!</h2>
+<main class="container">
+    <form id="form-filtros" class="filtros" aria-label="Filtrar pontos de reciclagem">
+        <div class="campo">
+            <label for="filtro-cidade">Cidade</label>
+            <select id="filtro-cidade" name="cidade">
+                <option value="">Todas as cidades</option>
+            </select>
+        </div>
 
-        <p>
-            Uma plataforma colaborativa para encontrar
-            pontos de reciclagem.
-        </p>
+        <div class="campo">
+            <label for="filtro-material">Material aceito</label>
+            <select id="filtro-material" name="material">
+                <option value="">Todos os materiais</option>
+            </select>
+        </div>
 
-        <span class="status">
-            Sistema online
-        </span>
-    </div>
+        <div class="acoes">
+            <button type="submit" class="botao botao-primario">Filtrar</button>
+            <button type="button" id="limpar-filtros" class="botao botao-secundario">Limpar filtros</button>
+        </div>
+    </form>
+
+    <section id="resultados" aria-labelledby="titulo-resultados">
+        <div class="resultados-topo">
+            <h2 id="titulo-resultados">Pontos de reciclagem</h2>
+            <p id="resumo" class="resumo" aria-live="polite"></p>
+        </div>
+
+        <div id="carregando" class="mensagem" role="status" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            Carregando pontos de reciclagem…
+        </div>
+
+        <div id="vazio" class="mensagem" role="status" hidden>
+            <p id="vazio-texto"></p>
+        </div>
+
+        <div id="erro" class="mensagem mensagem-erro" role="alert" hidden>
+            <p>Não foi possível carregar os pontos de reciclagem. Verifique sua conexão e tente novamente.</p>
+            <button type="button" id="tentar-novamente" class="botao botao-secundario">Tentar novamente</button>
+        </div>
+
+        <ul id="lista-pontos" class="lista" hidden></ul>
+    </section>
 </main>
+
+<script src="/js/app.js" defer></script>
 
 </body>
 </html>

@@ -33,13 +33,12 @@
 - Tratamento de erros.
 - Configuração de variáveis de ambiente.
 - Endpoint de verificação de saúde da aplicação.
+- Listagem de pontos de reciclagem na página inicial (nome, endereço, materiais aceitos e horário de funcionamento).
+- Filtros por cidade e por material, com indicação de carregamento, lista vazia e erro na consulta.
 
  ### 🚧 Em desenvolvimento
 
  - Interface web completa.
-- Listagem de pontos de reciclagem.
-- Filtro por cidade.
-- Filtro por material.
 - Cadastro de pontos através da interface.
 - Edição de pontos.
 - Exclusão de pontos.
@@ -135,6 +134,12 @@ npm run dev
 http://localhost:3000
 ```
 
+ O banco de dados começa vazio. Para popular a listagem com materiais e pontos de exemplo, execute (uma vez, com o servidor parado ou em outro terminal):
+
+```
+npm run db:seed
+```
+
  ## 🔎 Verificando a aplicação
 
  A aplicação possui um endpoint de saúde:
@@ -173,8 +178,22 @@ GET /api/pontos?cidade=São Paulo
 
  ### Filtrar por material
 
+O filtro usa o **slug** do material (ex.: `plastico`, `oleo-de-cozinha`). Os slugs disponíveis são retornados por `GET /api/materiais`.
+
 ```
 GET /api/pontos?material=plastico
+```
+
+ ### Combinar filtros
+
+```
+GET /api/pontos?cidade=Campinas&material=vidro
+```
+
+ ### Listar materiais
+
+```
+GET /api/materiais
 ```
 
  ### Buscar ponto por ID
