@@ -379,15 +379,19 @@ npm test
 
  **Open Source Contribution & Collaboration**
 
- - **Universidade/Instituição:** preencher
-- **Professor(a):** preencher
+ - **Universidade/Instituição:** UniFecaf
+- **Professor:** Robson Cardoso 
 
  ### Integrantes
 
- - Luis Gustavo dos Santos Talgatti
-- Integrante 2
-- Integrante 3
-- Integrante 4
+- Cláudio José Rodrigues de Oliveira Junior
+- Felipe Pardinho Belarmino
+- Gabriela Camarço
+- Igor Ferreira Alves
+- Luis Gustavo dos Santos Talgatti
+- Matheus Silva Dantas
+- Rickelmy Augusto Souza Pacheco
+
 
  ## 📄 Licença
 
