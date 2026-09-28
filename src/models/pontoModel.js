@@ -1,5 +1,30 @@
 const db = require("../database/connection");
 
+// Campos que o validador aceita omitir. O better-sqlite3 exige todas as
+// chaves dos parâmetros nomeados, então os ausentes viram NULL.
+const CAMPOS_OPCIONAIS = [
+  "numero",
+  "bairro",
+  "cep",
+  "telefone",
+  "horario_funcionamento",
+  "latitude",
+  "longitude",
+  "descricao",
+];
+
+function normalizarDados(dados) {
+  const normalizados = { ...dados };
+
+  for (const campo of CAMPOS_OPCIONAIS) {
+    if (normalizados[campo] === undefined || normalizados[campo] === "") {
+      normalizados[campo] = null;
+    }
+  }
+
+  return normalizados;
+}
+
 function listarTodos(filtros = {}) {
   let query = `
     SELECT DISTINCT
@@ -47,6 +72,22 @@ function listarTodos(filtros = {}) {
   const statement = db.prepare(query);
 
   return statement.all(params);
+}
+
+function listarMateriais() {
+  const materiais = db
+    .prepare(`
+      SELECT
+        id,
+        nome,
+        slug
+      FROM materiais
+    `)
+    .all();
+
+  // O SQLite ordena por byte, o que joga nomes acentuados
+  // (ex.: "Óleo de cozinha") para o fim da lista.
+  return materiais.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }
 
 function buscarPorId(id) {
@@ -114,7 +155,7 @@ function criar(dados) {
     )
   `);
 
-  const resultado = insert.run(dados);
+  const resultado = insert.run(normalizarDados(dados));
 
   associarMateriais(resultado.lastInsertRowid, dados.materiais || []);
 
@@ -142,7 +183,7 @@ function atualizar(id, dados) {
   `);
 
   const resultado = update.run({
-    ...dados,
+    ...normalizarDados(dados),
     id,
   });
 
@@ -197,6 +238,7 @@ function associarMateriais(pontoId, materiais) {
 
 module.exports = {
   listarTodos,
+  listarMateriais,
   buscarPorId,
   criar,
   atualizar,
