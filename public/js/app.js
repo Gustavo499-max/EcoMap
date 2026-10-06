@@ -384,15 +384,31 @@
     atualizar();
   });
 
-  el.limpar.addEventListener("click", () => {
+    // Limpa todos os filtros e atualiza a listagem.
+  function limparFiltros() {
     el.busca.value = "";
     el.cidade.value = "";
     el.material.value = "";
     atualizar();
+  }
+
+  el.limpar.addEventListener("click", limparFiltros);
+
+  // Permite limpar rapidamente os filtros usando a tecla Escape
+  // quando o usuário estiver no campo de busca.
+  el.busca.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") {
+      evento.preventDefault();
+
+      limparFiltros();
+
+      // Mantém o foco no campo de busca para facilitar
+      // uma nova pesquisa usando apenas o teclado.
+      el.busca.focus();
+    }
   });
 
   el.tentarNovamente.addEventListener("click", atualizar);
-
   if ("geolocation" in navigator) {
     el.localizacao.addEventListener("click", alternarLocalizacao);
   } else {
